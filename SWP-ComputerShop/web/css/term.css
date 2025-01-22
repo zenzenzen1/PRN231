@@ -1,0 +1,71 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Jun 26, 2023, 2:23:10 PM
+    Author     : Admin
+*/
+body, h1, h2, p {
+  margin: 5px;
+  padding: 5px;
+  margin-left: 20px;
+  margin-right: 20px;
+  color: red;
+}
+h1{
+    color: red;
+}
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.5;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: red;
+}
+
+h2 {
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+p {
+  margin-bottom: 10px;
+}
+
+/* Add some spacing and styling to headings */
+h1, h2 {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+/* Style the paragraphs within content */
+p {
+  color: red;
+}
+
+/* Add some padding and a background color to the main content area */
+#content {
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+/* Center the main content area */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins';
+    font-weight: 700;
+    color: red;
+    line-height: 1.1;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
