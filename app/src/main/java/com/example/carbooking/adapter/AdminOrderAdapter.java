@@ -29,7 +29,8 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
     private Context context;
     private List<Order> orderList;
     private List<Tour> tourList;
-
+    
+    
     public AdminOrderAdapter(Context context, List<Order> orderList) {
         this.context = context;
         this.orderList = orderList;

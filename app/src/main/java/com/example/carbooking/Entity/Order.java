@@ -17,6 +17,28 @@ import java.util.Date;
         @ForeignKey(entity = User.class, parentColumns = "id", childColumns = "userId")
             })
 public class Order {
+    
+    public enum PaymentMethod {
+        ZALOPAY(1, "Zalopay"),
+        COD(2, "Cash on departure");
+        
+        private final String displayPaymentMethod;
+        private final int id;
+
+        PaymentMethod(int id, String displayPaymentMethod) {
+            this.displayPaymentMethod = displayPaymentMethod;
+            this.id = id;
+        }
+        public int getId() {
+            return id;
+        }
+
+        public String getDisplayPaymentMethod() {
+            return displayPaymentMethod;
+        }
+        
+    }
+
     @PrimaryKey(autoGenerate = true)
     @NotNull
     @ColumnInfo(name = "id")

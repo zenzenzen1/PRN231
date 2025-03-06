@@ -4,16 +4,25 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -23,23 +32,34 @@ import com.bumptech.glide.Glide;
 import com.example.carbooking.Entity.Order;
 import com.example.carbooking.Entity.Tour;
 import com.example.carbooking.Entity.User;
+import com.example.carbooking.payment.zalopay.app_to_app.Api.CreateOrder;
+import com.example.carbooking.payment.zalopay.app_to_app.Constant.AppInfo;
 import com.example.carbooking.repository.OrderRepository;
 import com.example.carbooking.repository.TourRepository;
 import com.example.carbooking.repository.UserRepository;
 import com.example.carbooking.user.HomeActivity;
 import com.example.carbooking.user.TourDetailActivity;
 
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import vn.zalopay.sdk.Environment;
+import vn.zalopay.sdk.ZaloPayError;
+import vn.zalopay.sdk.ZaloPaySDK;
+import vn.zalopay.sdk.listeners.PayOrderListener;
+
 public class TourBooking extends AppCompatActivity {
     private TourRepository tourRepository = null;
     private UserRepository userRepository = null;
     private OrderRepository orderRepository = null;
-    Button addCount, subCount, btnbooKing, btnSelectDate, btnHome;
+    Button addCount, subCount, btnSelectDate, btnHome, btnbooKing;
     int mCount=1;
+    Order.PaymentMethod defaultPaymentMethod = Order.PaymentMethod.ZALOPAY;
+    Order.PaymentMethod paymentMethod = defaultPaymentMethod;
     TextView txtCount, tvTitle, tvLocationFrom, tvLocationTo, tvTourTime, tvDescription,
             tvTourNumber, tvPricePerPerson, tvVoteScore, tvVoteNumber, tvContactNumber, priceTour, tvStartDate, tvEndDate;
     ImageView imgTour;
@@ -48,6 +68,7 @@ public class TourBooking extends AppCompatActivity {
     SharedPreferences preferences;
     Tour tourList;
     String imageUriString = "";
+    private static final String TAG = "TourBooking";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +85,7 @@ public class TourBooking extends AppCompatActivity {
         // Nhận tour ID từ Intent
         Intent intent = getIntent();
         if (intent != null) {
-            tourId =  intent.getIntExtra(TourDetailActivity.KEY_TOUR_ID, -1);
+            tourId =  intent.getIntExtra(TourDetailActivity.KEY_TOUR_ID, 1);
         }
 
         tourList = tourRepository.getTour(tourId);
@@ -93,7 +114,9 @@ public class TourBooking extends AppCompatActivity {
         btnSelectDate = findViewById(R.id.btn_selectDate);
         btnbooKing = findViewById(R.id.btn_confirm);
         btnHome = findViewById(R.id.btn_home);
-
+        RadioGroup paymentMethodRadioGroup = findViewById(R.id.rdGroup_paymentMethod);
+        
+        
         if (tourList != null) {
 
 
@@ -122,8 +145,36 @@ public class TourBooking extends AppCompatActivity {
             // Example: Glide.with(this).load(firstTour.getImage()).into(imgTour);
         }
 
-
         txtCount.setText(Integer.toString(mCount));
+
+        
+        paymentMethodRadioGroup.removeAllViews();
+        for (Order.PaymentMethod paymentMethod :
+                Order.PaymentMethod.values()) {
+            RadioButton radioButton = new RadioButton(this);
+            radioButton.setText(paymentMethod.getDisplayPaymentMethod());
+            radioButton.setTextSize(18);
+            radioButton.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, // Width
+                    ViewGroup.LayoutParams.WRAP_CONTENT  // Height
+            );
+            int marginInPx = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics()
+            );
+            params.setMargins(0, marginInPx, 0, marginInPx); // marginStart & marginEnd
+            radioButton.setLayoutParams(params);
+            radioButton.setTag(paymentMethod.ordinal());
+            int _id = View.generateViewId();
+            radioButton.setId(_id);
+            paymentMethodRadioGroup.addView(radioButton);
+            if(paymentMethod.ordinal() == defaultPaymentMethod.ordinal()){
+                paymentMethodRadioGroup.check(_id);
+            }
+//            radioButton.setChecked(paymentMethod.ordinal() == defaultPaymentMethod.ordinal());
+        }
+
+       
 
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,12 +203,31 @@ public class TourBooking extends AppCompatActivity {
                 }
             }
         });
-
-        btnbooKing.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createOrder();
+        StrictMode.ThreadPolicy policy = new
+                StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+        // ZaloPay SDK Init
+        ZaloPaySDK.init(AppInfo.APP_ID, Environment.SANDBOX);
+        btnbooKing.setOnClickListener(v -> {
+            int radioButtonId = paymentMethodRadioGroup.getCheckedRadioButtonId();
+            RadioButton radioButton = findViewById(radioButtonId);
+            Toast.makeText(this, radioButton.getText() + ", tag = " + radioButton.getTag(), Toast.LENGTH_SHORT).show();
+            Order.PaymentMethod paymentMethod = Order.PaymentMethod.values()[(int) radioButton.getTag()];
+            Log.d(TAG, "onClick: paymentMethod = " + paymentMethod);
+            switch (paymentMethod)
+            {
+                case ZALOPAY:{
+                    handleZaloPay();
+                    Log.d(TAG, "handle ZALOPAY");
+                    break;
+                }
+                case COD: {
+                    Log.d(TAG, "handle COD");
+//                    createOrder();
+                    break;
+                }
             }
+//            createOrder();
         });
 
         btnSelectDate.setOnClickListener(new View.OnClickListener() {
@@ -168,7 +238,7 @@ public class TourBooking extends AppCompatActivity {
         });
 
     }
-
+    
     private void showDatePickerDialog() {
         final Calendar calendar = Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(
@@ -230,5 +300,46 @@ public class TourBooking extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Failed to create order!", Toast.LENGTH_SHORT).show();
         }
+    }
+    
+    private void handleZaloPay(){
+        double total = 10_000;
+        CreateOrder orderApi = new CreateOrder();
+        try {
+            JSONObject data = orderApi.createOrder("10000");
+            String code = data.getString("return_code");
+            Toast.makeText(getApplicationContext(), "return_code: " + code, Toast.LENGTH_SHORT).show();
+            if (code.equals("1")) {
+                String token = data.getString("zp_trans_token");
+                ZaloPaySDK.getInstance().payOrder(this, token, "demozpdk://app", new PayOrderListener(){
+                    @Override
+                    public void onPaymentSucceeded(String s, String s1, String s2) {
+                        Log.d("ZaloPay", "onPaymentSucceeded: " + s + "\n" + s1 + "\n" + s2);
+                        Toast.makeText(TourBooking.this, "Checkout successful. Booking Confirmed!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onPaymentCanceled(String s, String s1) {
+                        Log.d("ZaloPay", "onPaymentCanceled: " + s + "\n" + s1);
+                        Toast.makeText(TourBooking.this, "onPaymentCanceled", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
+                        Log.d("ZaloPay", "onPaymentError: " + zaloPayError + " " + s + "\n" + s1);
+                        Toast.makeText(TourBooking.this, "Something error with zalopay. Please try later.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        ZaloPaySDK.getInstance().onResult(intent);
     }
 }

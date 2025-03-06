@@ -30,6 +30,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
 }
 
 dependencies {
@@ -37,12 +38,22 @@ dependencies {
 //    implementation(libs.firebase.auth)
     //implementation(libs.gridlayout)
     implementation("androidx.gridlayout:gridlayout:1.0.0")
+    implementation(fileTree(mapOf(
+        "dir" to "../libs",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
+    
+    //zalopay
+    implementation("com.squareup.okhttp3:okhttp:4.6.0")
+    implementation("commons-codec:commons-codec:1.14")
+    
     annotationProcessor("androidx.room:room-compiler:2.4.3")
     androidTestImplementation("androidx.room:room-testing:2.4.3")
     implementation ("com.squareup.picasso:picasso:2.8")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation ("androidx.cardview:cardview:1.0.0")
-
+    
 
 
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
