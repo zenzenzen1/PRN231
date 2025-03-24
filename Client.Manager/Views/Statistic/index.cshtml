@@ -1,0 +1,207 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="~/css/Notification.css">
+<link rel="stylesheet" href="~/css/MangaListManager.css">
+
+<div id="root-statistic"></div>
+<script type="text/babel">
+    const years = [];
+    for(let year = new Date().getFullYear(); year >= 2023; year--) {
+        years.unshift(year.toString());
+    }
+    const pieOptions = {
+        chart: {
+            type: 'pie',
+            height: 300,
+            background: 'transparent' // Makes the background blend with dark mode
+        },
+        title: {
+            text: "Fruits Distribution", 
+            align: "left", 
+            style: {
+                color: "#ffffff", 
+                fontSize: "18px"
+            }
+        },
+        series: [44, 55, 13, 43, 22],
+        labels: ["Apple", "Mango", "Orange", "Banana", "Grapes"],
+        theme: {
+            mode: 'dark' // Enables dark mode
+        },
+        legend: {
+            labels: {
+                colors: '#ffffff' // White labels for better visibility
+            }
+        },
+        tooltip: {
+            theme: 'dark' // Dark tooltip background
+        },
+        dataLabels: {
+            style: {
+                colors: ['#fff'] // Ensure pie chart labels are visible in dark mode
+            }
+        }
+    };
+    const barOptions = {
+        chart: {
+            type: 'bar',
+            height: 300,
+            background: 'transparent',
+            events: {
+                dataPointSelection: function(event, chartContext, config) {
+                    // Get the clicked year from x-axis categories
+                    var clickedYear = config.w.config.xaxis.categories[config.dataPointIndex];
+                    
+                },
+                legendClick: function(chartContext, seriesIndex, opts) {
+                    console.log(chartContext, seriesIndex, opts);
+                },
+                markerClick: function(event, chartContext, opts) {
+                    console.log(event, chartContext, opts);
+                },
+                xAxisLabelClick: function(event, chartContext, opts) {
+                    @* console.log(event, chartContext, opts); *@
+                    const clickedYear = chartContext.w.config.xaxis.categories[opts.labelIndex];
+                    console.log(clickedYear);
+                }
+            }
+        },
+        series: [{
+            name: "Sales",
+            data: [150, 200, 180, 250, 300, 350] // Sales data for each year
+        }],
+        xaxis: {
+            categories: years, // Years as X-axis labels
+            labels: {
+                style: { colors: "#ffffff" } // White labels for dark theme
+            }
+        },
+        theme: { mode: 'dark' },
+        plotOptions: {
+            bar: {
+                distributed: true, // Makes each bar clickable
+                dataLabels: { position: "top" }
+            }
+        },
+        legend: { show: false },
+        tooltip: { theme: "dark" }
+    };
+    
+    const Chart = ({noOfCharts, statisticTypeId}) => {
+        const charts = Array.from({length: noOfCharts}, (_, index) => index + 1);
+        @* const charts = [];
+        for(let i = 0; i < props.props; i++) {
+            charts.push(i + 1);
+        } *@
+        if(statisticTypeId === 1)
+            return (
+                <React.Fragment>
+                    {Array.from({length: 4}, (_, index) => index).map((chart, index) => (
+                        <div key={index} className="col-md-6" id={`chart${index}`}></div>
+                    ))}
+                </React.Fragment>
+            );
+        
+        return (
+            charts.map((chart, index) => (
+                <div key={index} className="col-md-6" id={`chart${index}`}></div>
+            ))
+        );
+    }
+    const Statistic = () => {
+        const statisticTypes = [{
+                id: 1,
+                type: "Thống kê người dùng",
+                noOfCharts: 2
+            }, 
+            {
+                id: 2,
+                type: "Thống kê truyện",
+                noOfCharts: 1
+            }
+            ];
+        const [active, setActive] = React.useState(statisticTypes[0]);
+        const [charts, setCharts] = React.useState([]);
+        
+        React.useEffect(() => {
+            if(active.id === 1){
+                @* (async() => { *@
+                fetch(statisticBaseUrl + "/userRoleStatistic")
+                    .then(res => res.json())
+                    .then(res => {
+                        const chart = new ApexCharts(document.querySelector(`#chart${0}`), 
+                            {
+                                ...pieOptions,
+                                series: res.map(item => item.count),
+                                labels: res.map(item => item.role)
+                            } 
+                        );
+                        @* charts.push(chart); *@
+                        setCharts(charts => [...charts, chart]);
+                        return res;
+                    })
+                    .catch(err => console.log(err));
+                    ;
+                let chart;
+                @* charts.push(); *@
+                chart = new ApexCharts(document.querySelector(`#chart${2}`), barOptions);
+                @* charts.push(chart); *@
+                setCharts(charts => [...charts, chart]);
+                @* charts.forEach(chart => chart.render()); *@
+                @* })(); *@
+                
+            }
+            
+            return () => {
+                console.log("unmount", charts);
+                charts.forEach(chart => chart && chart.destroy());
+                @* setCharts([]); *@
+                charts.length = 0;
+            } 
+        }, [active]);
+        return (
+            <div className="container border-list"> 
+                <div className="row" style={{color: "white"}}>
+                    <div className="col-lg-12">
+                        <div>
+                            <h1 >Thống Kê</h1>
+                            <div className="row" >
+                                {statisticTypes.map((type, index) => (
+                                    <h3 
+                                        key={index}
+                                        style={{cursor: "pointer", textDecoration: type.id === active.id ? "underline" : "none"}}
+                                        onClick={() => { 
+                                            @* setActive(state => {return{...state, ...type};});  *@
+                                            setActive(type);
+                                        }}
+                                        className="active">{type.type}
+                                    </h3>
+                                ))}
+                            </div>
+                            <div className="row p-0" >
+                                {Array.from({length: active.noOfCharts}, (_, index) => index).map((chart, index) => (
+                                    <div key={index} className="col-md-6" id={`chart${index}`}></div>
+                                ))}
+                                @* <Chart noOfCharts={active.noOfCharts} statisticTypeId={active.id} /> *@
+                                @* <div 
+                                    style={{justifyContent: "flex-start"}}
+                                    className="col-md-6" id="chart">
+                                </div> *@
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    $(document).ready(function () {
+        ReactDOM.render(
+            <Statistic />,
+            document.getElementById('root-statistic')
+        );
+        $(".border-list").css("margin-top", "100px");
+    });
+</script>

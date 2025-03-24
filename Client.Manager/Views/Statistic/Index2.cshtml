@@ -1,0 +1,315 @@
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="~/css/Notification.css">
+<link rel="stylesheet" href="~/css/MangaListManager.css">
+
+<div id="root-statistic"></div>
+<script type="text/babel">
+    const Statistic = () => {
+        const statisticMap = new Map();
+        const statisticTypes = [{
+            id: 1,
+            type: "Thống kê người dùng",
+            options: ["Role", "Status"]
+        },
+        {
+            id: 2,
+            type: "Thống kê truyện",
+            options: ["Top Thể Loại", "Status", "Top Readings"]
+        }
+        ];
+        statisticTypes.forEach(type => {
+            statisticMap.set(type.id, 0);
+        });
+        let options = null;
+        const [active, setActive] = React.useState({...statisticTypes[0], currentOption: 0, chart: options});
+        const handleChangeChart = (type = {}) => {
+            @* if(active.currentOption === statisticMap.get(active.id)) return; *@
+            let baseOptions = {
+                dataLabels: {
+                    style: {
+                        colors: ["#fff"], // Set the text color (Black)
+                    },
+                },
+                legend: {
+                    labels: {
+                        colors: "#fff", // Legend text color
+                    },
+                },
+                tooltip: {
+                    theme: "dark", // Change tooltip text color
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                        width: 200
+                        },
+                        legend: {
+                        position: 'bottom'
+                        },
+                        theme: {
+                            mode: 'dark', 
+                        }
+                    }}]
+                };
+            if(type.id === 1){
+                baseOptions = {
+                    ...baseOptions,
+                    chart: {
+                        height: "100%",
+                        width: "100%",
+                        type: 'pie',
+                    }
+                }
+                if(statisticMap.get(active.id) === 0){
+                    fetch(statisticBaseUrl + "/userRoleStatistic")
+                        .then(res => res.json())
+                        .then(res => {
+                            @* options.series = res.data; *@
+                            setActive(state =>{ 
+                                return {...state, 
+                                    ...type,
+                                    chart: {
+                                        ...baseOptions,
+                                        series: res.map(item => item.count),
+                                        labels: res.map(item => item.role)
+                                    },
+                                    currentOption: statisticMap.get(active.id)
+                                    };
+                                });
+                            })
+                        .catch(err => console.log(err));
+                        
+                        
+                } else if(statisticMap.get(active.id) === 1){
+                    setActive(state => {
+                        return {...state, currentOption: statisticMap.get(active.id)};
+                    });
+                }
+            
+            }
+            else if(type.id === 2){
+                if(statisticMap.get(active.id) === 0){
+                    fetch(statisticBaseUrl + "/topReadingCategory")
+                        .then(res => res.json())
+                        .then(res => {
+                            console.log(res);
+                            setActive(state =>{ 
+                                return {...state, 
+                                    ...type,
+                                    chart:{
+                                        chart: {
+                                            type: "bar",
+                                            height: 400,
+                                            background: "transparent", // Transparent background
+                                            foreColor: "#ffffff", // White text for labels
+                                            width: "100%",
+                                            animations: {
+                                                enabled: true
+                                            },
+                                        },
+                                        theme: {
+                                            mode: "dark" // Enable dark mode
+                                        },
+                                        plotOptions: {
+                                            bar: {
+                                                horizontal: false,
+                                                },
+                                            },
+                                        series: [
+                                            {
+                                                name: "",
+                                                data: res.map(item => item.viewCount)
+                                            }
+                                        ],
+                                        
+                                        xaxis: {
+                                            categories: res.map(item => item.categoryName),
+                                            labels: {
+                                                style: {
+                                                    fontStyle: "normal",
+                                                    colors: "#ffffff" 
+                                                }
+                                            },
+                                            group: {
+                                                style: {
+                                                    fontSize: '14px',
+                                                    fontWeight: 700,
+                                                    colors: "#ffffff" 
+                                                },
+                                                    groups: [
+                                                        { title: `Top ${res.length} thể loại nhiều lượt xem nhất`, cols: res.length, colSpan: 1, start: 0 }
+                                                    ]
+                                            }
+                                        },
+                                        yaxis: {
+                                            labels: {
+                                                style: {
+                                                    colors: "#ffffff" // White text for Y-axis labels
+                                                }
+                                            },
+                                            title: {
+                                                text: "Số lượt đọc",
+                                                style: {
+                                                    color: "#ffffff" // White text for Y-axis title
+                                                }
+                                            }
+                                        },
+                                        dataLabels: {
+                                            style: {
+                                                colors: ["#ffffff"] // White text for data labels
+                                            }
+                                        },
+                                        tooltip: {
+                                            theme: "dark",
+                                            y: {
+                                                formatter: function (val) {
+                                                    return val + " lượt xem";
+                                                }
+                                            }
+                                        },
+                                        grid: {
+                                        },
+                                        legend: {
+                                            labels: {
+                                                colors: "#ffffff" // White text for legend
+                                            }
+                                        }
+                                    },
+                                    currentOption: statisticMap.get(active.id)
+                                    };
+                                });
+                            })
+                        .catch(err => console.log(err));
+                } else if(statisticMap.get(active.id) === 1){
+                    setActive(state => {
+                        return {...state, ...type, currentOption: statisticMap.get(active.id)};
+                    });
+                } else if(statisticMap.get(active.id) === 2){
+                    setActive(state => {
+                        return {...state, ...type, currentOption: statisticMap.get(active.id)};
+                    });
+                }
+                    
+            }
+        }
+        React.useEffect(() => {
+            const options = {
+                series: [44, 55, 13, 43, 22],
+                chart: {
+                    height: "100%",
+                    width: "100%",
+                    type: 'pie',
+                },
+                dataLabels: {
+                    style: {
+                    colors: ["#fff"], // Set the text color (Black)
+                    },
+                },
+                legend: {
+                    labels: {
+                        colors: "#fff", // Legend text color
+                    },
+                },
+                tooltip: {
+                    theme: "dark", // Change tooltip text color
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                        width: 200
+                        },
+                        legend: {
+                        position: 'bottom'
+                        },
+                        theme: {
+                            mode: 'dark', 
+                        }
+                    }}]
+                };
+            fetch(statisticBaseUrl + "/userRoleStatistic")
+                .then(res => res.json())
+                .then(res => {
+                    @* options.series = res.data; *@
+                    setActive(state => { 
+                        return {...state, 
+                            chart: {
+                                ...options,
+                                series: res.map(item => item.count),
+                                labels: res.map(item => item.role)},
+                            currentOption: statisticMap.get(active.id)
+                            };
+                        });
+                    })
+                .catch(err => console.log(err));
+        },[]);
+        React.useEffect(() => {
+            let chart;
+            if(options || active.chart){
+                chart = new ApexCharts(document.querySelector("#chart"), active.chart);
+                chart.render();
+            }
+            
+            return () => {
+                chart && chart.destroy();
+            }
+        },[options, active]);
+        console.log(active);
+        return (
+            <div className="container border-list"> 
+                <div className="row" style={{color: "white"}}>
+                    <div className="col-lg-12">
+                        <div>
+                            <h1 >Thống Kê</h1>
+                            <div className="row" >
+                                {statisticTypes.map((type, index) => (
+                                    <h3 
+                                        key={index}
+                                        style={{cursor: "pointer", textDecoration: type.id === active.id ? "underline" : "none"}}
+                                        onClick={() => { 
+                                            @* setActive(state => {return{...state, ...type};});  *@
+                                            handleChangeChart(type);
+                                        }}
+                                        className="active">{type.type}
+                                    </h3>
+                                ))}
+                                
+                            </div>
+                            <div className="row p-0" >
+                                <div className="mt-2">
+                                    {statisticTypes[active.id - 1].options.map((option, index) => (
+                                        <h4
+                                            key={index}
+                                            className="mb-0"
+                                            style={{cursor: "pointer", textDecoration: index === active.currentOption ? "underline" : "none"}}
+                                            onClick={() => { 
+                                                statisticMap.set(active.id, index);
+                                                handleChangeChart({id: active.id});
+                                            }}>{option}
+                                        </h4>
+                                    ))}
+                                </div>
+                                <div 
+                                    style={{justifyContent: "flex-start"}}
+                                    className="col-md-6" id="chart">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    $(document).ready(function () {
+        ReactDOM.render(
+            <Statistic />,
+            document.getElementById('root-statistic')
+        );
+        $(".border-list").css("margin-top", "100px");
+    });
+</script>
