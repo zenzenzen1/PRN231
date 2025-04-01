@@ -34,5 +34,10 @@ namespace Service.MangaOnline.Models
         public virtual ICollection<FollowList> FollowLists { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<ReadingHistory> ReadingHistories { get; set; }
+        
+        public override string ToString()
+        {
+            return $"Id: {Id}, FullName: {FullName}, Email: {Email}, CreatedAt: {CreatedAt}, RoleId: {RoleId}";
+        }
     }
 }

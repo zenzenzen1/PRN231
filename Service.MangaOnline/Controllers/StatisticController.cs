@@ -12,19 +12,33 @@ namespace Service.MangaOnline.Controllers
     public class StatisticController : ControllerBase
     {
         private readonly StatisticService _statisticService;
-        public StatisticController(StatisticService statisticService)
+        private readonly IConfiguration _configuration;
+        public StatisticController(StatisticService statisticService, IConfiguration configuration)
         {
             _statisticService = statisticService;
+            _configuration = configuration;
+        }
+        
+        
+        
+        [HttpGet("numberOfUsersByYears")]
+        public async Task<IActionResult> NumberOfUsersByYear(){
+            return Ok(await _statisticService.NumberOfUsersByYears(null, null));
         }
         
         [HttpGet("topReadingCategory")]
-        public async Task<IActionResult> TopReadingCategory(int limit = 10){
+        public async Task<IActionResult> TopReadingCategory(int? limit){
             return Ok(await _statisticService.TopReadingCategory(limit));
         }
         
         [HttpGet("userRoleStatistic")]
         public async Task<IActionResult> UserRoleStatistic(){
             return Ok(await _statisticService.UserRoleStatistic());
+        }
+        
+        [HttpGet("bottomReadingCategory")]
+        public async Task<IActionResult> BottomReadingCategory(int? limit){
+            return Ok(await _statisticService.BottomReadingCategory(limit));
         }
     }
 }

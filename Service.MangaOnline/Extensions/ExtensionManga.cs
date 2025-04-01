@@ -20,6 +20,12 @@ public class ExtensionManga : IExtensionManga
 
         return value.ToString();
     }
+    
+    public List<T> GetEnumList<T>()
+    {
+        return Enum.GetValues(typeof(T)).Cast<T>().ToList();
+    }
+    
     public T CoverIntToEnum<T>(int value)
     {
         return (T)Enum.ToObject(typeof(T), value);

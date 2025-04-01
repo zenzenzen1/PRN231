@@ -11,6 +11,17 @@
     for(let year = new Date().getFullYear(); year >= 2023; year--) {
         years.unshift(year.toString());
     }
+    const statisticTypes = [{
+            id: 1,
+            type: "Thống kê người dùng",
+            noOfCharts: 4
+        }, 
+        {
+            id: 2,
+            type: "Thống kê truyện",
+            noOfCharts: 4
+        }
+        ];
     const pieOptions = {
         chart: {
             type: 'pie',
@@ -40,7 +51,7 @@
         },
         dataLabels: {
             style: {
-                colors: ['#fff'] // Ensure pie chart labels are visible in dark mode
+                @* colors: ['#fff'] // Ensure pie chart labels are visible in dark mode *@
             }
         }
     };
@@ -88,7 +99,399 @@
         legend: { show: false },
         tooltip: { theme: "dark" }
     };
-    
+    const MangaStatistic = () => {
+        React.useEffect(() => {
+            fetch(statisticBaseUrl + "/topReadingCategory")
+                .then(res => res.json())
+                .then(res => {
+                    const chart = new ApexCharts(document.querySelector(`#chart${0}`), 
+                        {
+                            ...barOptions,
+                            plotOptions: {
+                                bar: {
+                                    horizontal: false,
+                                    },
+                                },
+                            series: [
+                                {
+                                    name: "",
+                                    data: res.map(item => item.viewCount)
+                                }
+                            ],
+                            xaxis: {
+                                categories: res.map(item => item.categoryName),
+                                labels: {
+                                    style: {
+                                        fontStyle: "normal",
+                                        colors: "#ffffff" 
+                                    }
+                                },
+                                group: {
+                                    style: {
+                                        fontSize: '14px',
+                                        fontWeight: 700,
+                                        colors: "#ffffff" 
+                                    },
+                                    groups: [
+                                        { title: `Top ${res.length} thể loại nhiều lượt xem nhất`, cols: res.length, colSpan: 1, start: 0 }
+                                    ]
+                                }
+                            },
+                            yaxis: {
+                                labels: {
+                                    style: {
+                                        colors: "#ffffff" // White text for Y-axis labels
+                                    }
+                                },
+                                title: {
+                                    text: "Số lượt xem",
+                                    style: {
+                                        color: "#ffffff" // White text for Y-axis title
+                                    }
+                                }
+                            },
+                            dataLabels: {
+                                style: {
+                                    colors: ["#ffffff"] // White text for data labels
+                                }
+                            },
+                            tooltip: {
+                                theme: "dark",
+                                y: {
+                                    formatter: function (val) {
+                                        return val + " lượt xem";
+                                    }
+                                }
+                            },
+                            grid: {
+                            },
+                            legend: {
+                                labels: {
+                                    colors: "#ffffff" // White text for legend
+                                }
+                            }
+                        } 
+                    );
+                    chart.render();
+                })
+                .catch(err => console.log(err));
+                
+            fetch(statisticBaseUrl + "/bottomReadingCategory")
+                .then(res => res.json())
+                .then(res => {
+                    const chart = new ApexCharts(document.querySelector(`#chart${1}`), 
+                        {
+                            ...barOptions,
+                            plotOptions: {
+                                bar: {
+                                    horizontal: false,
+                                    },
+                                },
+                            series: [
+                                {
+                                    name: "",
+                                    data: res.map(item => item.viewCount)
+                                }
+                            ],
+                            xaxis: {
+                                categories: res.map(item => item.categoryName),
+                                labels: {
+                                    style: {
+                                        fontStyle: "normal",
+                                        colors: "#ffffff" 
+                                    }
+                                },
+                                group: {
+                                    style: {
+                                        fontSize: '14px',
+                                        fontWeight: 700,
+                                        colors: "#ffffff" 
+                                    },
+                                    groups: [
+                                        { title: `Top ${res.length} thể loại ít lượt xem nhất`, cols: res.length, colSpan: 1, start: 0 }
+                                    ]
+                                }
+                            },
+                            yaxis: {
+                                labels: {
+                                    style: {
+                                        colors: "#ffffff" // White text for Y-axis labels
+                                    }
+                                },
+                                title: {
+                                    text: "Số lượt xem",
+                                    style: {
+                                        color: "#ffffff" // White text for Y-axis title
+                                    }
+                                }
+                            },
+                            dataLabels: {
+                                style: {
+                                    colors: ["#ffffff"] // White text for data labels
+                                }
+                            },
+                            tooltip: {
+                                theme: "dark",
+                                y: {
+                                    formatter: function (val) {
+                                        return val + " lượt xem";
+                                    }
+                                }
+                            },
+                            grid: {
+                            },
+                            legend: {
+                                labels: {
+                                    colors: "#ffffff" // White text for legend
+                                }
+                            }
+                        } 
+                    );
+                    chart.render();
+                })
+                .catch(err => console.log(err));
+        }, []);
+        
+        return (
+        <React.Fragment>
+            <div className="row p-0" >
+                @* {Array.from({length: active.noOfCharts}, (_, index) => index).map((chart, index) => (
+                    <div key={index} className="col-md-6" id={`chart${index}`}></div>
+                ))} *@
+                @* <Chart noOfCharts={active.noOfCharts} statisticTypeId={active.id} /> *@
+                @* <div 
+                    style={{justifyContent: "flex-start"}}
+                    className="col-md-6" id="chart"
+                > 
+                </div>
+                *@
+                {Array.from({length: 4}, (_, index) => index).map((chart, index) => (
+                    <div key={index} className="col-md-6" id={`chart${index}`}></div>
+                ))}
+            </div>
+        </React.Fragment>
+        )
+    }
+    const UserStatistic = () => {
+        const [userRoleChart, setUserRoleChart] = React.useState(null);
+        React.useEffect(() => {
+            fetch(statisticBaseUrl + "/userRoleStatistic")
+                .then(res => res.json())
+                .then(res => {
+                    const chart = new ApexCharts(document.querySelector(`#chart${0}`), 
+                        {
+                            ...pieOptions,
+                            title: {
+                                ...pieOptions.title,
+                                text: "User Roles Statistic"
+                            },
+                            series: res.map(item => item.count),
+                            labels: res.map(item => item.role)
+                        } 
+                    );
+                    setUserRoleChart(chart);
+                    chart.render();
+                })
+                .catch(err => console.log(err));
+                ;
+            return () => {
+                userRoleChart && userRoleChart.destroy();
+            }
+        }, []);
+        
+        const [selectedYear, setSelectedYear] = React.useState(years[years.length - 1]);
+        const setLabelsColumnChart = (clickedYear) => {
+            document.querySelectorAll('#chart2 g.apexcharts-xaxis-texts-g tspan')
+                .forEach((tspan, index) => {
+                    if (tspan.innerHTML === clickedYear) {
+                        tspan.setAttribute('style', 'cursor: pointer; fill: #33FF57; font-weight: bold; font-size: 14px; text-decoration: underline;');
+                    } else {
+                        tspan.setAttribute('style', 'cursor: pointer; fill: #fff; font-weight: normal; font-size: 14px;');
+                    }
+                });
+        };
+        React.useEffect(() => {
+            fetch(statisticBaseUrl + "/numberOfUsersByYears")
+                .then(res => res.json())
+                .then(res => {
+                    const data = [];
+                    const roleMap = new Map();
+                    
+                    res.forEach(item => {
+                        item.roles.forEach(role => {
+                            if (!roleMap.has(role.roleId)) {
+                                roleMap.set(role.roleId, {roleName: role.roleName, data: [role.count]});
+                            } else {
+                                roleMap.set(role.roleId, {...roleMap.get(role.roleId), data: [...roleMap.get(role.roleId).data, role.count]});
+                            }
+                        });
+                    });
+                    console.log(roleMap);
+                    const chart = new ApexCharts(document.querySelector(`#chart${2}`), {
+                        ...barOptions,
+                        series: [...roleMap.values().map((item, index, array) => {
+                            return {
+                                name: item.roleName,
+                                data: item.data.reduce((prev, curr, index, array) => {
+                                    return [...prev, (index > 0 ? prev[prev.length - 1] + curr : curr)];
+                                }, [])
+                            }
+                        })],
+                        theme: {
+                            ...barOptions.theme,
+                            palette: 'palette2', 
+                        },
+                        chart: {
+                            ...barOptions.chart,
+                            stacked: true,
+                            height: 350,
+                            toolbar: {
+                                show: false
+                            },
+                            zoom: {
+                                enabled: false
+                            },
+                            events: {
+                                xAxisLabelClick: function(event, chartContext, opts) {
+                                    @* console.log(event, chartContext, opts); *@
+                                    const clickedYear = chartContext.w.config.xaxis.categories[opts.labelIndex];
+                                    setLabelsColumnChart(clickedYear);
+                                    setSelectedYear(clickedYear);
+                                },
+                                animationEnd: function (chartCtx) {
+                                    @* window.setTimeout(function () {
+                                        chartCtx.updateOptions(
+                                            {
+                                                series: [
+                                                    {
+                                                        ...barOptions.series[0],
+                                                        data: chartCtx.w.globals.initialSeries[0].data.map((item, index) => {
+                                                            return item + 1;
+                                                        })
+                                                    }
+                                                ],
+                                                xaxis: {
+                                                },
+                                                subtitle: {
+                                                    text: "abc"
+                                                }
+                                            },
+                                            false,
+                                            false
+                                        );
+                                    }, 300); *@
+                                }
+                            },
+                        },
+                        legend: {
+                            position: 'right',
+                            offsetY: 0
+                        },
+                        fill: {
+                            opacity: 1
+                        },
+                        plotOptions: {
+                            bar: {
+                                horizontal: false,
+                                dataLabels: {
+                                    total: {
+                                        enabled: true,
+                                        style: {
+                                            fontSize: '13px',
+                                            fontWeight: 900,
+                                            color: '#fff',
+                                            fontFamily: 'Helvetica, Arial, sans-serif',
+                                        },
+                                    }
+                                }
+                            }
+                        },
+                        xaxis: {
+                            ...barOptions.xaxis,
+                            categories: years,
+                            labels: {
+                                ...barOptions.xaxis.labels,
+                                style: {
+                                    @* colors: ['#FF5733', '#33FF57'],  *@
+                                    colors: years.map((year, index) => {
+                                        return year === selectedYear ? '#fff' : '#fff';
+                                    }),
+                                    fontSize: '14px', // Font size
+                                    fontFamily: 'Arial, sans-serif', // Font family
+                                    fontWeight: 600, // Bold text
+                                },
+                                trim: false,
+                            },
+                            title: {
+                                text: "Số lượng người dùng theo năm",
+                                offsetX: 0,
+                                offsetY: 0,
+                                style: {
+                                    color: '#fff',
+                                    fontSize: '13px',
+                                    fontFamily: 'Helvetica, Arial, sans-serif',
+                                    fontWeight: 600,
+                                    cssClass: 'apexcharts-xaxis-title',
+                                },
+                            },
+                        },
+                        @* annotations: {
+                            xaxis: [{
+                                x: selectedYear, 
+                                borderColor: "#000",
+                                strokeDashArray: 0,
+                                borderWidth: 2, // Thickness of underline
+                            }],
+                        }, *@
+                        subtitle: {
+                            text: "subtitle",
+                            align: 'left',
+                            margin: 10,
+                            offsetX: 0,
+                            offsetY: 0,
+                            floating: false,
+                            style: {
+                                fontSize:  '12px',
+                                fontWeight:  'normal',
+                                fontFamily:  undefined,
+                                color:  '#fff'
+                            },
+                        }
+                    });
+                    chart.render()
+                        .then(() => {
+                            setLabelsColumnChart(selectedYear);
+                        })
+                    ;
+                })
+            ;
+            return () => {
+                
+            }
+        }, []);
+        @* charts.push(chart); *@
+        @* charts.forEach(chart => chart.render()); *@
+        @* })(); *@
+        return (
+        <React.Fragment>
+            <div className="row p-0" >
+                @* {Array.from({length: active.noOfCharts}, (_, index) => index).map((chart, index) => (
+                    <div key={index} className="col-md-6" id={`chart${index}`}></div>
+                ))} *@
+                @* <Chart noOfCharts={active.noOfCharts} statisticTypeId={active.id} /> *@
+                @* <div 
+                    style={{justifyContent: "flex-start"}}
+                    className="col-md-6" id="chart"
+                > 
+                </div>
+                *@
+                {Array.from({length: 4}, (_, index) => index).map((chart, index) => (
+                    <div key={index} className="col-md-6" id={`chart${index}`}></div>
+                ))}
+            </div>
+        </React.Fragment>
+        )
+    }
     const Chart = ({noOfCharts, statisticTypeId}) => {
         const charts = Array.from({length: noOfCharts}, (_, index) => index + 1);
         @* const charts = [];
@@ -111,55 +514,29 @@
         );
     }
     const Statistic = () => {
-        const statisticTypes = [{
-                id: 1,
-                type: "Thống kê người dùng",
-                noOfCharts: 2
-            }, 
-            {
-                id: 2,
-                type: "Thống kê truyện",
-                noOfCharts: 1
-            }
-            ];
+        
         const [active, setActive] = React.useState(statisticTypes[0]);
         const [charts, setCharts] = React.useState([]);
         
         React.useEffect(() => {
             if(active.id === 1){
                 @* (async() => { *@
-                fetch(statisticBaseUrl + "/userRoleStatistic")
-                    .then(res => res.json())
-                    .then(res => {
-                        const chart = new ApexCharts(document.querySelector(`#chart${0}`), 
-                            {
-                                ...pieOptions,
-                                series: res.map(item => item.count),
-                                labels: res.map(item => item.role)
-                            } 
-                        );
-                        @* charts.push(chart); *@
-                        setCharts(charts => [...charts, chart]);
-                        return res;
-                    })
-                    .catch(err => console.log(err));
-                    ;
-                let chart;
-                @* charts.push(); *@
-                chart = new ApexCharts(document.querySelector(`#chart${2}`), barOptions);
-                @* charts.push(chart); *@
-                setCharts(charts => [...charts, chart]);
-                @* charts.forEach(chart => chart.render()); *@
-                @* })(); *@
+                
                 
             }
             
             return () => {
-                console.log("unmount", charts);
-                charts.forEach(chart => chart && chart.destroy());
-                @* setCharts([]); *@
-                charts.length = 0;
             } 
+        }, [active]);
+        const statisticComponent = React.useMemo(() => {
+            if(active.id === 1){
+                return <UserStatistic />;
+            }
+            else if(active.id === 2){
+                return <MangaStatistic />;
+            }
+            else
+                return "";
         }, [active]);
         return (
             <div className="container border-list"> 
@@ -180,17 +557,7 @@
                                     </h3>
                                 ))}
                             </div>
-                            <div className="row p-0" >
-                                {Array.from({length: active.noOfCharts}, (_, index) => index).map((chart, index) => (
-                                    <div key={index} className="col-md-6" id={`chart${index}`}></div>
-                                ))}
-                                @* <Chart noOfCharts={active.noOfCharts} statisticTypeId={active.id} /> *@
-                                @* <div 
-                                    style={{justifyContent: "flex-start"}}
-                                    className="col-md-6" id="chart">
-                                </div> *@
-                            </div>
-                            
+                            {statisticComponent}
                         </div>
                     </div>
                 </div>

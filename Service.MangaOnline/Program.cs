@@ -17,7 +17,14 @@ builder.Services.AddControllers();
 
 services.AddDbContext<MangaOnlineV1DevContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr"), sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5, // Number of retries
+            maxRetryDelay: TimeSpan.FromSeconds(1), // Wait time before retry
+            errorNumbersToAdd: null // Retry on all transient errors
+        );
+    });
 });
 
 //Session
@@ -44,6 +51,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PriceHistoryService>();
 builder.Services.AddScoped<NotificationHub>();
 builder.Services.AddScoped<VnPayService>();
+builder.Services.AddScoped<CategoryService>();
 
 builder.Services.AddCors(options =>
 {
