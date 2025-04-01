@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  webapi:
+    image: dotnetapi
+    container_name: web_api
+    build:
+      context: ../Service.MangaOnline  # Make sure this points to your Web API project directory
+      dockerfile: Dockerfile
+    ports:
+      - "5001:80"  # Expose backend on port 5001
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__ConStr=Server=sqlserver,1433;Database=MyDatabase;User Id=sa;Password=ProjectPrn231@;TrustServerCertificate=True;
+    networks:
+      - app-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_db
+    ports:
+      - "1434:1433"
+    environment:
+      SA_PASSWORD: "ProjectPrn231@"
+      ACCEPT_EULA: "Y"
+    volumes:
+      # - ../db/dbscript.sql:/docker-entrypoint-initdb.d/
+      # - ../db/dbscript.sql:/var/opt/mssql/data
+      # - ../db/dbscript.sql:/usr/src/app/dbscript.sql
+      # - ../db:/scripts
+      # - ../db/data:/var/opt/mssql/data
+      # - ../db/log:/var/opt/mssql/log
+      # - ../db/secrets:/var/opt/mssql/secrets
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+      # /opt/mssql/bin/sqlservr & 
+      # sleep 30 && 
+    # command: >
+    #   /bin/bash -c "
+    #   /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'ProjectPrn231@' -i /scripts/dbscript.sql && 
+    #   wait"
+
+
+volumes:
+  sql_data:
+
+networks:
+  app-network:

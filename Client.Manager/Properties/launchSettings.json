@@ -11,7 +11,8 @@
     "Client.Manager": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "hotReloadProfile": "aspnetcore",
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:5030",
       "hotReloadEnabled": true,
       "environmentVariables": {

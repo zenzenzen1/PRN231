@@ -3,6 +3,26 @@
     ViewData["Title"] = "Trang Chủ";
     HomeResponse homeResponse = ViewBag.TopMonthManga;
 }
+<script type="text/babel">
+    function MyComponent() {
+        
+        
+        const a = "React + Vanila JS";
+        return <h2 className="content__title">Hello from {a}!</h2>;
+    }
+    const Nav = () => {
+        const [count, setCount] = React.useState(0);
+        return (
+            <div className="header__nav-item">
+                <h1 className="header__nav-link" onMouseOver={() => setCount(count + 1)} onClick={() => setCount(count + 1)}>Hover Me :"] {count}</h1>
+            </div>
+        );
+    };
+    console.log("react");
+    @* ReactDOM.render(<MyComponent />, document.getElementById("react-root")); *@
+    ReactDOM.render(<MyComponent />, document.getElementById("react-root"));
+    ReactDOM.render(<Nav />, document.getElementById("root-nav"));
+</script>
 
 <link rel="stylesheet" href="~/css/Index.css">
 <!-- home -->
@@ -19,6 +39,8 @@
         <div class="row">
             <div class="col-12">
                 <h1 class="home__title"><b>TRUYỆN ĐỀ CỬ</b> THÁNG @DateTime.Now.Month</h1>
+                <div id="react-root">
+                </div>
 
                 <button class="home__nav home__nav--prev" type="button">
                     <i class="icon ion-ios-arrow-round-back"></i>

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Service.MangaOnline.Commons;
 using Service.MangaOnline.Models;
 using System.Net.Http.Headers;
@@ -10,7 +9,6 @@ namespace Client.Manager.Controllers;
 
 public class AuthController : Controller
 {
-    
     private readonly ILogger<HomeController> _logger;
     private readonly HttpClient client = null;
     private string ServiceMangaUrl = "";
@@ -28,8 +26,6 @@ public class AuthController : Controller
         ServiceMangaUrl = "http://localhost:5098/";
         _logger = logger;
     }
-
-    
 
     [HttpGet]
     public IActionResult AuthLogin(String? noti)

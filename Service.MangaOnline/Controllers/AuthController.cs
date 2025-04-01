@@ -18,11 +18,9 @@ public class AuthController : Controller
     private readonly IExtensionManga _extensionManga;
     private readonly IJwtTokenHandler _jwt;
 
-
     public AuthController(MangaOnlineV1DevContext mangaOnlineV1DevContext, IExtensionManga extensionManga,
         IJwtTokenHandler jwt)
     {
-
         _context = mangaOnlineV1DevContext;
         _extensionManga = extensionManga;
         _jwt = jwt;

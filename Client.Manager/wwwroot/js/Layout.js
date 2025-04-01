@@ -29,8 +29,6 @@ $(document).ready(function () {
     }else {
         $('#btn-login').show();
     }
-    updateListHistoryMangaId();
-    loadNotiHistory();
     updateListFollowMangaId();
     loadNotiFollow();
 })

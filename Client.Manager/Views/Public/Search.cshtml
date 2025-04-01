@@ -106,8 +106,6 @@
                                 </ul>
                             </div>
                             <!-- end filter item -->
-
-
                         </div>
 
                         <!-- filter btn -->
@@ -262,8 +260,6 @@
             var tmp = GetSort($("#filter-sort").val());
             stringQuery+=`orderBy=${tmp} desc`
         }
-
-
 
          stringQuery+=stringQuery.length>1?"&":"$";
             var tmp = $("#current-page").html()*6 - 6;

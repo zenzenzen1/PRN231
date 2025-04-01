@@ -9,6 +9,7 @@ namespace Service.MangaOnline.Models
         {
             Comments = new HashSet<Comment>();
             FollowLists = new HashSet<FollowList>();
+            Payments = new HashSet<Payment>();
             ReadingHistories = new HashSet<ReadingHistory>();
         }
 
@@ -31,6 +32,12 @@ namespace Service.MangaOnline.Models
         public virtual UserToken? UserToken { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<FollowList> FollowLists { get; set; }
+        public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<ReadingHistory> ReadingHistories { get; set; }
+        
+        public override string ToString()
+        {
+            return $"Id: {Id}, FullName: {FullName}, Email: {Email}, CreatedAt: {CreatedAt}, RoleId: {RoleId}";
+        }
     }
 }

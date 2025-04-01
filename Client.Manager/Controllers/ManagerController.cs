@@ -120,7 +120,7 @@ public class ManagerController : Controller
             if (responseC.IsSuccessStatusCode)
             {
                 return Redirect("/Public/DetailManga?id="+Request.Form["mangaId"]); 
-            } 
+            }
         }
         return View("Error");
     }

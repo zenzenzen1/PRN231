@@ -12,4 +12,6 @@ public interface IExtensionManga
     string UpdateImage(IFormFile myFile,string oldFile);
     
     string UpdateImageAvatarUser(IFormFile myFile,string? oldFile);
+    
+    List<T> GetEnumList<T>();
 }

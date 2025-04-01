@@ -35,11 +35,18 @@
     <link rel="apple-touch-icon" sizes="144x144" href="~/lib/icon/apple-touch-icon-144x144.png">
 
     @* Jquery *@
-    <script src="~/lib/bootstrap/dist/js/jquery-3.3.1.min.js"></script>
+    @* Jquery *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @* <script src="~/lib/bootstrap/dist/js/jquery-3.3.1.min.js"></script> *@
     <script src="~/lib/bootstrap/dist/js/jquery.mousewheel.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/jquery.mCustomScrollbar.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/jquery.morelines.min.js"></script>
-
+    
+    
+    @* apexchart *@
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
     @* css *@
     <link rel="stylesheet" href="~/css/Notification.css" />
 
@@ -62,6 +69,8 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="header__content">
+                            <div id="root-nav">
+                            </div>
                             <!-- header logo -->
                             <a asp-controller="Home" asp-action="Index" class="header__logo">
                                 <img src="~/lib/img/logo.svg" alt="">
@@ -150,10 +159,14 @@
                                         </li>
                                         <li id="user-levelUp" style="display: none">
                                             <a href="/Auth/UpdateAccount">Nâng cấp tài khoản</a>
+                                            <a class="" href="#" onclick="upgradeAccount()">Nâng cấp tài khoản</a>
                                         </li>
                                         @* <li id="user-manager" style="display: none"> *@
                                         @*     <a href="/manage/user/list">Quản lý người dùng</a> *@
                                         @* </li> *@
+                                        <div id="root-nav-user">
+                                        </div>
+
                                         <li id="manga-manager" style="display: none">
                                             <a href="/manager/ListManga">Quản lý Manga</a>
                                         </li>
@@ -212,7 +225,6 @@
             <span aria-hidden="false">&times;</span>
         </button>
     </div>
-
 
     @RenderBody()
 
@@ -342,7 +354,7 @@
     <script src="~/lib/bootstrap/dist/js/main.js"></script>
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/NotiSignalr.js"></script>
-    <script>
+    @* <script>
               $(document).ready(function () {
                  var user = GetUserData();
                  if (user!==null){
@@ -364,7 +376,6 @@
                      var current = $("#profile").attr('href');
                      current += user.userId;
                      $("#profile").attr('href', current);
-                     debugger
                      current = $("#avatar").attr('src');
                      if(user.avartar != null)
                         current += user.avartar;
@@ -379,13 +390,136 @@
                     window.location.href = "/public/search?query=" + data;
             })
             });
-
-            function GetUserData() {
+    </script> *@
+    @* react *@
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script>
+        const serverBaseUrl = '@configuration["server:host"]';
+        const statisticBaseUrl = serverBaseUrl + "/api/Statistic"
+        const paymentBaseUrl = serverBaseUrl + "/api/Payment"
+        function GetUserData() {
             const user = localStorage.getItem("USER_DATA");
             return $.parseJSON(user);
             // {"userId":"ef20386b-2335-4f65-87b2-819e1aef6612","userName":"traicv","email":"enm55606@nezid.com","role":"UserNormal","avartar":null}
         }
     </script>
+    <script type="text/babel">
+    
+        function MyComponent() {
+            const a = "React + Vanila JS";
+            return <h2 className="content__title">Hello from {a}!</h2>;
+        }
+        const Nav = () => {
+            const [count, setCount] = React.useState(0);
+            return (
+                <div className="header__nav-item">
+                    <h1 className="header__nav-link" onMouseOver={() => setCount(count + 1)} onClick={() => setCount(count + 1)}>Hover Me :"] {count}</h1>
+                </div>
+            );
+        };
+        const NormalUser = () => {
+            React.useEffect(async () => {
+                if(GetUserData()){
+                    const connection = new signalR.HubConnectionBuilder()
+                        .withUrl(serverBaseUrl + "/hubs/payment?userId=" + GetUserData().userId) // Replace with your hub URL
+                        .withAutomaticReconnect() // Enables automatic reconnection
+                        @* .configureLogging(signalR.LogLevel.Information) *@
+                        .build();
+                    connection.on("ReceiveMessage", (message) => {
+                        if(message === "success"){
+                            alert("Nâng cấp tài khoản thành công");
+                            localStorage.setItem("USER_DATA", JSON.stringify({...GetUserData(), role: "UserVip"}));
+                            location.reload();
+                        }
+                    });
+                    await connection.start();
+                }
+                
+                return async () => {
+                    await connection && connection.stop();
+                }
+            }, []);
+            
+            return (
+                <div>
+                </div>
+            );
+        }
+        
+        $(document).ready(function () {
+            @* ReactDOM.render(<MyComponent />, document.getElementById("react-root")); *@
+            const rootNavUser = $("#root-nav-user")[0];
+            var user = GetUserData();
+            console.log(user);
+            if(rootNavUser && user && user.role){
+                switch(user.role){
+                    case "Admin":
+                        ReactDOM.render(<div>
+                            <li >
+                                <a href="/Statistic">Xúc Xắc Thống Kê</a>
+                            </li>
+                        </div>, rootNavUser);
+                        break;
+                    case "UserVip":
+                        break;
+                    case "UserNormal":
+                        ReactDOM.render(
+                            <NormalUser />, rootNavUser
+                        );
+                        break;
+                }
+            }
+            ReactDOM.render(<Nav />, document.getElementById("root-nav"));
+                
+        });
+    </script>
+    
+    <script>
+        $(document).ready(function () {
+            var user = GetUserData();
+            if (user!==null){
+                $("#tab-follow").show();
+                var curent = $("#tab-follow").attr('href');
+                curent += user.userId
+                $("#tab-follow").attr('href', curent);
+
+                var current = $("#profile").attr('href');
+                current += user.userId;
+                $("#profile").attr('href', current);
+                @* debugger *@
+                current = $("#avatar").attr('src');
+                if(user.avartar != null)
+                current += user.avartar;
+                else {
+                    current += "avatar-default.jpg"
+                }
+                $("#avatar").attr('src', current);
+            }
+
+            $("#search-button").on("click",() => {
+                var data = $("#search-input").val();
+                window.location.href = "/public/search?query=" + data;
+            })
+        });
+        function upgradeAccount() {
+            if(!GetUserData()) return;
+            fetch(paymentBaseUrl + "/getVnpayPaymentUrl" + `?userId=${GetUserData().userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    @* window.location.href = data.url; *@
+                    window.open(data.url);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+        
+        
+    </script>
+    
 
 
     @await RenderSectionAsync("Scripts", required: false)

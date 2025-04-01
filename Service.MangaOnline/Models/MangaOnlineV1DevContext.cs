@@ -27,6 +27,8 @@ namespace Service.MangaOnline.Models
         public virtual DbSet<Manga> Mangas { get; set; } = null!;
         public virtual DbSet<Notification> Notifications { get; set; } = null!;
         public virtual DbSet<Page> Pages { get; set; } = null!;
+        public virtual DbSet<Payment> Payments { get; set; } = null!;
+        public virtual DbSet<PriceHistory> PriceHistories { get; set; } = null!;
         public virtual DbSet<ReadingHistory> ReadingHistories { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
         public virtual DbSet<UserToken> UserTokens { get; set; } = null!;
@@ -35,8 +37,7 @@ namespace Service.MangaOnline.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=LAPTOP-TBCGNF2H;Initial Catalog=MangaOnline.V1.Dev; Trusted_Connection=SSPI;Encrypt=false;TrustServerCertificate=true");
+                optionsBuilder.UseSqlServer("Name=ConnectionStrings:ConStr");
             }
         }
 
@@ -61,7 +62,7 @@ namespace Service.MangaOnline.Models
             modelBuilder.Entity<CategoryManga>(entity =>
             {
                 entity.HasKey(e => e.SubId)
-                    .HasName("PK__Category__4D9BB84ADA78D0C7");
+                    .HasName("PK__Category__4D9BB84A04D52573");
 
                 entity.ToTable("CategoryManga");
 
@@ -207,6 +208,38 @@ namespace Service.MangaOnline.Models
                     .HasForeignKey(d => d.ChapterId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Pages_Chapteres");
+            });
+
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.ToTable("Payment");
+
+                entity.Property(e => e.PaymentId).ValueGeneratedNever();
+
+                entity.Property(e => e.PaymentTime).HasColumnType("datetime");
+
+                entity.HasOne(d => d.PriceHistory)
+                    .WithMany(p => p.Payments)
+                    .HasForeignKey(d => d.PriceHistoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Payment__PriceHi__160F4887");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Payments)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Payment__UserId__151B244E");
+            });
+
+            modelBuilder.Entity<PriceHistory>(entity =>
+            {
+                entity.ToTable("PriceHistory");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.ChangedTime).HasColumnType("datetime");
+
+                entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<ReadingHistory>(entity =>

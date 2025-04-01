@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using final_project.Services.ClientServices.Payment;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.MangaOnline.DTO;
 using Service.MangaOnline.Models;
@@ -10,11 +11,13 @@ namespace Service.MangaOnline.Controllers
     public class UserController : ControllerBase
     {
         private readonly MangaOnlineV1DevContext _context;
+        
 
-        public UserController(MangaOnlineV1DevContext mangaOnlineV1DevContext)
+        public UserController(MangaOnlineV1DevContext mangaOnlineV1DevContext, VnPayService vnPayService)
         {
             _context = mangaOnlineV1DevContext;
         }
+        
 
         [HttpGet]
         public IActionResult GetUserProfile(Guid id)
