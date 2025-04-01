@@ -247,12 +247,12 @@
             var tmp = $("#filter-rating").val();
             stringQuery+=`Star  eq ${tmp}`
         }
-            if ($("#filter-author").val().trim() !== "") {
+            @* if ($("#filter-author").val().trim() !== "") {
                 console.log("author", $("#filter-author").val());
                 stringQuery += stringQuery.length > 1 ? " and " : "$filter=";
                 var authorName = $("#filter-author").val().trim();
                 stringQuery += `authorName eq '${authorName}'`;
-            }
+            } *@
 
          if($("#filter-sort").val() != "Ngày cập nhật"){
             console.log("sort",$("#filter-sort").val());
